@@ -1,5 +1,29 @@
--- Create the stored procedure ComputeAverageWeightedScoreForUser
+-- Create the stored procedure ComputeAverageWeightedScoreForUsers
 DELIMITER //
+
+CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE user_id_val INT;
+    DECLARE cur CURSOR FOR SELECT id FROM users;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO user_id_val;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Compute and update the average weighted score for the current user
+        CALL ComputeAverageWeightedScoreForUser(user_id_val);
+    END LOOP;
+    CLOSE cur;
+END //
+
+DELIMITER ;
+
+-- Create the stored procedure ComputeAverageWeightedScoreForUser
 CREATE PROCEDURE ComputeAverageWeightedScoreForUser(IN user_id INT)
 BEGIN
     DECLARE total_score FLOAT;
@@ -25,4 +49,4 @@ BEGIN
     SET average_score = average_score
     WHERE id = user_id;
 END //
-DELIMITER ;
+
